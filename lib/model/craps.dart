@@ -1,6 +1,6 @@
 import 'dart:math';
 
-enum State { comeOut, point, win, loss }
+enum _State { comeOut, point, win, loss }
 
 class Roll {
   final int _die1;
@@ -25,41 +25,41 @@ class Round {
   bool get win => _win;
 
   Round(Random rng) : _rolls = <Roll>[] {
-    State state = State.comeOut;
+    _State state = _State.comeOut;
     int point = 0;
     do {
       Roll roll = Roll(rng);
       _rolls.add(roll);
       switch (state) {
-        case State.comeOut:
+        case _State.comeOut:
           switch (roll.value) {
             case 2:
             case 3:
             case 12:
-              state = State.loss;
+              state = _State.loss;
               break;
             case 7:
             case 11:
-              state = State.win;
+              state = _State.win;
               break;
             default:
-              state = State.point;
+              state = _State.point;
               point = roll.value;
               break;
           }
           break;
-        case State.point:
+        case _State.point:
           if (roll.value == point) {
-            state = State.win;
+            state = _State.win;
           } else if (roll.value == 7) {
-            state = State.loss;
+            state = _State.loss;
           }
           break;
         default:
         // DO NOTHING.
       }
-    } while (state == State.point);
-    _win = (state == State.win);
+    } while (state == _State.point);
+    _win = (state == _State.win);
   }
 }
 class Snapshot {

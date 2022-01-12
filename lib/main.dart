@@ -1,3 +1,5 @@
+import 'package:craps_simulator_flutter/model/craps.dart';
+import 'package:craps_simulator_flutter/viewmodel/main_view_model.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -49,18 +51,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   bool _running = false;
+  MainViewModel _viewModel = MainViewModel();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void _toggleRunning() {
+    setState(() => _running = !_running);
+    _viewModel.toggleRunning();
   }
 
   @override
@@ -77,18 +73,19 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
         actions: <Widget>[
-          if (!_running) IconButton(
-            icon: const Icon(
-              Icons.replay,
-              color: Colors.white,
+          if (!_running)
+            IconButton(
+              icon: const Icon(
+                Icons.replay,
+                color: Colors.white,
+              ),
+              onPressed: _viewModel.reset,
             ),
-            onPressed: () => {},
-          ),
           IconButton(
             icon: _running
                 ? const Icon(Icons.pause)
                 : const Icon(Icons.play_arrow),
-            onPressed: () => setState(() => _running = !_running),
+            onPressed: _toggleRunning,
           ),
         ],
       ),
@@ -112,21 +109,24 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            StreamBuilder<Snapshot>(
+              stream: _viewModel.snapshotStream,
+              builder: (context, event) {
+                if (event.hasData) {
+                  Snapshot snapshot = event.data as Snapshot;
+                  int rounds = snapshot.wins + snapshot.losses;
+                  double percentage =
+                      (rounds > 0) ? (100.0 * snapshot.wins / rounds) : 0;
+                  return Text(
+                      '${snapshot.wins} wins / $rounds rounds = $percentage%');
+                } else {
+                  return const Text('No data');
+                }
+              },
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
